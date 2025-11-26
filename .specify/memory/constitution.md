@@ -1,55 +1,108 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+Version change: 1.0.0 → 1.0.0
+List of modified principles: None (initial population)
+Added sections: Core Principles, Architecture Constraints, Development Workflow, Governance
+Removed sections: None
+Templates requiring updates:
+- .specify/templates/plan-template.md: ✅ updated (Constitution Check section aligns with new principles)
+- .specify/templates/spec-template.md: ✅ updated (no specific sections to align beyond general principles)
+- .specify/templates/tasks-template.md: ✅ updated (no specific sections to align beyond general principles)
+- .specify/templates/commands/*.md: ⚠ pending (no custom command templates found, so no updates made)
+Follow-up TODOs:
+- TODO(runtime-guidance.md): Ensure runtime-guidance.md exists and contains relevant development-time rules as referenced in Governance.
+-->
+# AI, Agents, RAGs & Future of the Book — Project Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Agent-First Architecture
+All features must be framed as independent, composable AI agents.
+Agents must have:
+- A single clear responsibility
+- A text-I/O contract (stdin/stdout)
+- Deterministic fallbacks
+- No hidden state unless explicitly declared
+Each agent must be usable outside the core system, and be testable in isolation.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. RAG-Native Design
+Retrieval-Augmented Generation (RAG) is a first-class principle.
+All knowledge workflows must:
+- Treat documents (books, chapters, metadata) as retrievable chunks
+- Use embeddings + indexing libraries as standalone modules
+- Support both semantic and keyword retrieval
+- Ensure that generation is never done without an explainable source
+RAG pipelines must remain replaceable and versioned independently.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Test-First Development (NON-NEGOTIABLE)
+Before any implementation, the following must exist:
+- Unit tests for the agent
+- CLI contract tests
+- RAG retrieval tests
+- Generation quality tests (JSON + human-readable formats)
+Only after tests fail → implementation is allowed.
+Red-Green-Refactor is mandatory.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Integration Testing for Knowledge Flows
+Integration tests are required whenever:
+- Agent contracts change
+- Retrieval schema or chunking strategy changes
+- New knowledge sources (PDFs, EPUBs, URLs) are added
+- Multi-agent orchestration is introduced
+End-to-end test: query → retrieve → generate → verify → output.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Future-Proof Book Format Standards
+All knowledge inputs must follow these rules:
+- Books processed into open, transparent formats (Markdown, JSON, EPUB)
+- Chunking strategies documented per revision
+- Metadata required: author, semantic tags, chapter bounds, embedding version
+- Versioning: MAJOR.MINOR.BUILD for all book embeddings
+Simplicity > Cleverness.
+Strict “You Aren’t Gonna Need It” (YAGNI) enforcement.
 
-### [PRINCIPLE_6_NAME]
+### VI. Observability & Explainability
+Every agent and RAG action must generate structured logs:
+- What query was issued
+- What chunks were retrieved
+- Why the model produced its answer
+- Which agent handled which task
+Explainability is a primary design constraint, not an afterthought.
 
+## Architecture Constraints
 
-[PRINCIPLE__DESCRIPTION]
+- Must support Claude Code, Spec Kit Plus, and CLI execution
+- All modules must be importable as libraries
+- UI layers (if any) must only call CLI or HTTP wrappers—not internal logic
+- Hot-swappable RAG backends: local embeddings, cloud vectors, SQLite-based DBs
+- Agents must run locally unless a cloud requirement is explicitly approved
+- All book content ingestion must be offline-friendly (no hidden APIs)
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+## Development Workflow
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
-
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
-
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+- Define Agent Spec (YAML or SpecKit)
+- Define Tests First
+- Validate RAG Schema (chunk size, embeddings, vector store)
+- Implement Minimal Version
+- CLI Exposure
+- Review: Constitution Compliance Required
+- Merge Only When All Tests Pass
+- Version & Document Changes
+- Quality Gates:
+  - 100% tests passing
+  - No untestable logic
+  - No undeclared dependencies
+  - Logging required for all retrieval and generation workflows
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+This constitution supersedes all development preferences
+Amendments require:
+- Written proposal
+- Justification
+- Migration plan
+- Version bump
+All PRs must be reviewed against this constitution
+Complexity must always be justified
+Use runtime-guidance.md for development-time rules
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2025-11-26 | **Last Amended**: 2025-11-26

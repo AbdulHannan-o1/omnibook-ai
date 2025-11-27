@@ -35,6 +35,15 @@ Deliverables:
 End Goal:
 Enable beginners to understand AI Agents, RAG systems, and the future of books effortlessly while providing **interactive learning** through the chatbot."
 
+## Clarifications
+
+### Session 2025-11-28
+- Q: How will the hierarchical relationship of chapters within a book be technically represented and stored (e.g., nested objects in JSON, parent/child IDs in a database, specific file system structure)? → A: Nested JSON objects
+- Q: What are the target latency and throughput expectations for the RAG-powered chatbot's responses (e.g., response within X seconds for Y concurrent users)? → A: Moderate Latency (3-5s) / Moderate Throughput (50-100 users)
+- Q: Will the AI content generation be handled by an internal module, or will it integrate with an external AI service? If external, which one, and what are its expected APIs and failure modes? → A: The content for the book will be generated using the internally available agent named as book-generation-agent. 85-90% of the content will be AI-generated for the book, and the agent should use the context7 MCP server to read the latest documentation on the web; the remaining content will be given by the developer (me).
+- Q: What specific metrics and logging will be implemented to monitor the health and performance of the platform and chatbot, and what are the alerting thresholds? → A: Comprehensive (Performance + Errors)
+- Q: What are the security considerations for data handling (e.g., user queries, generated content), and what authentication/authorization mechanisms (if any) are required for platform access? → A: Standard User Auth + Data Protection
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - AI-Generated Book Content (Priority: P1)
@@ -97,7 +106,7 @@ A beginner user reading the e-book encounters a concept they want to explore fur
 
 ### Functional Requirements
 
-- **FR-001**: System MUST automatically generate comprehensive e-book content covering AI Agents, RAG Systems, and the Future of Books, tailored for beginners.
+- **FR-001**: System MUST automatically generate comprehensive e-book content covering AI Agents, RAG Systems, and the Future of Books, tailored for beginners, using an internal `book-generation-agent`. This agent will generate 85-90% of the content, with the remaining 10-15% provided by the developer. The agent MUST utilize the `context7` MCP server to retrieve the latest documentation for content generation.
 - **FR-002**: System MUST automatically generate a clear, hierarchical table of contents for each e-book.
 - **FR-003**: System MUST automatically generate a concise "What's on this page" summary for every chapter/page of the e-book.
 - **FR-004**: Chatbot MUST accurately answer user questions exclusively using content from the generated e-book.
@@ -107,10 +116,21 @@ A beginner user reading the e-book encounters a concept they want to explore fur
 
 ### Key Entities *(include if feature involves data)*
 
-- **Book**: Represents the entire AI-generated e-book, identified by its topic and version. It is composed of multiple chapters and includes a Table of Contents.
+- **Book**: Represents the entire AI-generated e-book, identified by its topic and version. It is composed of multiple chapters and includes a Table of Contents. Chapters are represented as nested JSON objects within the Book entity.
 - **Chapter**: A logical division of the Book, containing main textual content and a "What's on this page" summary. Chapters have a hierarchical relationship within the Book.
 - **User Query**: The natural language input from a user to the RAG-Powered Chatbot, seeking information or clarification.
 - **RAG System**: The internal component responsible for efficiently retrieving relevant chunks of information from the Book content based on a User Query, to inform Chatbot responses.
+
+## Non-Functional Requirements
+
+### Performance
+- **NFR-PERF-001**: The RAG-powered Chatbot MUST provide responses with moderate latency (3-5 seconds) and support moderate throughput (50-100 concurrent users).
+
+### Observability
+- **NFR-OBS-001**: The platform MUST implement comprehensive logging for errors and key events, and detailed metrics for performance (latency, throughput). Alerting thresholds MUST be established for degraded performance and critical errors.
+
+### Security & Privacy
+- **NFR-SEC-001**: The platform MUST implement standard user authentication (e.g., username/password) and standard data protection mechanisms for user queries and generated content.
 
 ## Success Criteria *(mandatory)*
 

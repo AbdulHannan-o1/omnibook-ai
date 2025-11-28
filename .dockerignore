@@ -1,0 +1,22 @@
+# Ignore everything by default
+**
+
+# Allow specific files/directories that are needed
+!.git/HEAD
+!.git/config
+!.git/description
+!.git/hooks/
+!.git/info/
+!.git/objects/
+!.git/refs/
+!.gitignore
+!book/
+!backend/
+!frontend/
+!CLAUDE.md
+!GEMINI.md
+!package.json
+!README.md
+!specs/
+!history/
+!.specify/

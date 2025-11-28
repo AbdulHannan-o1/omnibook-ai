@@ -12,7 +12,7 @@ The OmniBook-AI Platform will provide an AI-generated e-book experience on compl
 ## Technical Context
 
 **Language/Version**: Node.js (latest LTS) with TypeScript
-**Primary Dependencies**: Vector Database Client (e.g., Pinecone/Weaviate), Embedding Library (e.g., OpenAI/Cohere/Hugging Face Transformers), Web Framework (e.g., Express/Fastify), internal `book-generation-agent`, `context7` MCP server.
+**Primary Dependencies**: Vector Database Client (Qdrant), Embedding Library (e.g., OpenAI/Cohere/Hugging Face Transformers), Web Framework (e.g., Express/Fastify), internal `book-generation-agent`, `context7` MCP server, OpenAI Agent SDK (Python) for chatbot.
 **Storage**: NoSQL (e.g., MongoDB) for book content and chapter hierarchy (nested JSON), Relational (e.g., PostgreSQL) for user authentication and metadata.
 **Testing**: Jest/Vitest for unit and integration tests (including RAG retrieval and generation quality tests), Supertest for API contract tests.
 **Target Platform**: Linux server (cloud deployment)
@@ -55,51 +55,14 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
-<!--
-  ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
-  for this feature. Delete unused options and expand the chosen structure with
-  real paths (e.g., apps/admin, packages/something). The delivered plan must
-  not include Option labels.
--->
 
 ```text
-# [REMOVE IF UNUSED] Option 1: Single project (DEFAULT)
-src/
-├── models/
-├── services/
-├── cli/
-└── lib/
-
-tests/
-├── contract/
-├── integration/
-└── unit/
-
-# [REMOVE IF UNUSED] Option 2: Web application (when "frontend" + "backend" detected)
-backend/
-├── src/
-│   ├── models/
-│   ├── services/
-│   └── api/
-└── tests/
-
+book/
 frontend/
-├── src/
-│   ├── components/
-│   ├── pages/
-│   └── services/
-└── tests/
-
-# [REMOVE IF UNUSED] Option 3: Mobile + API (when "iOS/Android" detected)
-api/
-└── [same as backend above]
-
-ios/ or android/
-└── [platform-specific structure: feature modules, UI flows, platform tests]
+backend/
 ```
 
-**Structure Decision**: [Document the selected structure and reference the real
-directories captured above]
+**Structure Decision**: The project uses a monorepo structure with three main directories: `book/` for the Docusaurus book engine, `frontend/` for the React + Vite UI, and `backend/` for the FastAPI application. This aligns with "Option 2: Web application (when "frontend" + "backend" detected)" from the original template, expanded to include the `book/` directory as a primary component.
 
 ## Complexity Tracking
 

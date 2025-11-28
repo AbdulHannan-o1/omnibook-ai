@@ -14,4 +14,15 @@ venv/
 .pytest_cache/
 .coverage
 htmlcov/
+
+# Universal
 .DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# Project specific
+book/build/
+package-lock.json
+frontend/package-lock.json
+book/package-lock.json

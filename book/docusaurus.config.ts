@@ -51,6 +51,7 @@ const config: Config = {
       {
         docs: {
           sidebarPath: './sidebars.ts',
+          remarkPlugins: [require('remark-gfm')],
           // Please change this to your repo.
           // Remove this to remove the "edit this page" links.
           editUrl:
@@ -95,13 +96,7 @@ const config: Config = {
           type: 'docSidebar',
           sidebarId: 'tutorialSidebar',
           position: 'left',
-          label: 'Tutorial',
-        },
-        {to: '/blog', label: 'Blog', position: 'left'},
-        {
-          href: 'https://github.com/facebook/docusaurus',
-          label: 'GitHub',
-          position: 'right',
+          label: 'Book',
         },
       ],
     },
@@ -148,7 +143,7 @@ const config: Config = {
           ],
         },
       ],
-      copyright: `Copyright © ${new Date().getFullYear()} My Project, Inc. Built with Docusaurus.`,
+      copyright: `Copyright © ${new Date().getFullYear()} OmniBook-AI. Built with Docusaurus.`,
     },
     prism: {
       theme: prismThemes.github,

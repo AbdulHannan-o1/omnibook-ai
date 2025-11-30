@@ -1,0 +1,28 @@
+# Node.js
+node_modules/
+dist/
+build/
+*.log
+.env*
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Universal
+.DS_Store
+Thumbs.db
+*.tmp
+*.swp
+
+# Project specific
+book/build/
+package-lock.json
+frontend/package-lock.json
+book/package-lock.json

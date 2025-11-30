@@ -1,108 +1,67 @@
 <!--
 Sync Impact Report:
-Version change: 1.0.0 → 1.0.0
-List of modified principles: None (initial population)
-Added sections: Core Principles, Architecture Constraints, Development Workflow, Governance
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - Agent-First Architecture
+  - RAG-Native Design
+  - Test-First Development (NON-NEGOTIABLE)
+  - Integration Testing for Knowledge Flows
+  - Future-Proof Book Format Standards
+  - Observability & Explainability
+Added sections: Architectural Constraints, Development Workflow
 Removed sections: None
 Templates requiring updates:
-- .specify/templates/plan-template.md: ✅ updated (Constitution Check section aligns with new principles)
-- .specify/templates/spec-template.md: ✅ updated (no specific sections to align beyond general principles)
-- .specify/templates/tasks-template.md: ✅ updated (no specific sections to align beyond general principles)
-- .specify/templates/commands/*.md: ⚠ pending (no custom command templates found, so no updates made)
-Follow-up TODOs:
-- TODO(runtime-guidance.md): Ensure runtime-guidance.md exists and contains relevant development-time rules as referenced in Governance.
+  - .specify/templates/plan-template.md: ✅ updated
+  - .specify/templates/spec-template.md: ✅ updated
+  - .specify/templates/tasks-template.md: ✅ updated
+  - .specify/templates/commands/sp.constitution.md: ✅ updated
+  - .specify/templates/commands/sp.plan.md: ✅ updated
+  - .specify/templates/commands/sp.spec.md: ✅ updated
+  - .specify/templates/commands/sp.tasks.md: ✅ updated
+Follow-up TODOs: None
 -->
-# AI, Agents, RAGs & Future of the Book — Project Constitution
+# OmniBook-AI Platform Constitution
 
 ## Core Principles
 
 ### I. Agent-First Architecture
-All features must be framed as independent, composable AI agents.
-Agents must have:
-- A single clear responsibility
-- A text-I/O contract (stdin/stdout)
-- Deterministic fallbacks
-- No hidden state unless explicitly declared
-Each agent must be usable outside the core system, and be testable in isolation.
+The system is designed around a `book-generation-agent` and will extend to other components (RAG, Chatbot) as independent agents with clear responsibilities and testability. This principle ensures modularity, clear separation of concerns, and ease of testing and maintenance.
 
 ### II. RAG-Native Design
-Retrieval-Augmented Generation (RAG) is a first-class principle.
-All knowledge workflows must:
-- Treat documents (books, chapters, metadata) as retrievable chunks
-- Use embeddings + indexing libraries as standalone modules
-- Support both semantic and keyword retrieval
-- Ensure that generation is never done without an explainable source
-RAG pipelines must remain replaceable and versioned independently.
+RAG is a core principle, with explicit focus on treating documents as retrievable chunks, using embeddings, and ensuring explainable sources for generation. This guarantees that AI-generated content is grounded in verifiable facts and minimizes hallucinations.
 
 ### III. Test-First Development (NON-NEGOTIABLE)
-Before any implementation, the following must exist:
-- Unit tests for the agent
-- CLI contract tests
-- RAG retrieval tests
-- Generation quality tests (JSON + human-readable formats)
-Only after tests fail → implementation is allowed.
-Red-Green-Refactor is mandatory.
+TDD is mandatory: Tests are written, user approved, tests fail, then implementation occurs. The Red-Green-Refactor cycle is strictly enforced. This plan incorporates Jest/Vitest for unit/integration tests and Supertest for API contract tests, aligning with the mandate for pre-implementation testing. RAG retrieval and generation quality tests are also planned.
 
 ### IV. Integration Testing for Knowledge Flows
-Integration tests are required whenever:
-- Agent contracts change
-- Retrieval schema or chunking strategy changes
-- New knowledge sources (PDFs, EPUBs, URLs) are added
-- Multi-agent orchestration is introduced
-End-to-end test: query → retrieve → generate → verify → output.
+Integration tests are crucial for verifying the RAG pipeline, agent interactions, and new knowledge sources. Focus areas requiring integration tests include new library contract tests, contract changes, inter-service communication, and shared schemas.
 
 ### V. Future-Proof Book Format Standards
-All knowledge inputs must follow these rules:
-- Books processed into open, transparent formats (Markdown, JSON, EPUB)
-- Chunking strategies documented per revision
-- Metadata required: author, semantic tags, chapter bounds, embedding version
-- Versioning: MAJOR.MINOR.BUILD for all book embeddings
-Simplicity > Cleverness.
-Strict “You Aren’t Gonna Need It” (YAGNI) enforcement.
+The use of Markdown/HTML for e-books and nested JSON for chapter hierarchy aligns with open formats. Metadata and content versioning will be explicitly addressed. This ensures longevity, interoperability, and easy adaptation to future changes.
 
 ### VI. Observability & Explainability
-Every agent and RAG action must generate structured logs:
-- What query was issued
-- What chunks were retrieved
-- Why the model produced its answer
-- Which agent handled which task
-Explainability is a primary design constraint, not an afterthought.
+Comprehensive logging and metrics are mandated (NFR-OBS-001), directly supporting structured logging and explainability for agent and RAG actions. This ensures that the system's behavior can be monitored, debugged, and understood effectively.
 
-## Architecture Constraints
+## Architectural Constraints
 
-- Must support Claude Code, Spec Kit Plus, and CLI execution
-- All modules must be importable as libraries
-- UI layers (if any) must only call CLI or HTTP wrappers—not internal logic
-- Hot-swappable RAG backends: local embeddings, cloud vectors, SQLite-based DBs
-- Agents must run locally unless a cloud requirement is explicitly approved
-- All book content ingestion must be offline-friendly (no hidden APIs)
+- **Support Claude Code, Spec Kit Plus, and CLI execution**: The development environment and agent-centric design align with this.
+- **All modules must be importable as libraries**: This will be a guiding principle during module design and implementation.
+- **UI layers must only call CLI or HTTP wrappers—not internal logic**: The web application architecture with backend APIs ensures the frontend interacts via HTTP.
+- **Hot-swappable RAG backends**: The design allows for flexibility in choosing and swapping vector database clients and embedding libraries.
+- **Agents must run locally unless cloud requirement explicitly approved**: The `book-generation-agent` is internal and will run locally.
+- **All book content ingestion must be offline-friendly (no hidden APIs)**: The plan emphasizes offline-friendly content ingestion.
 
 ## Development Workflow
 
-- Define Agent Spec (YAML or SpecKit)
-- Define Tests First
-- Validate RAG Schema (chunk size, embeddings, vector store)
-- Implement Minimal Version
-- CLI Exposure
-- Review: Constitution Compliance Required
-- Merge Only When All Tests Pass
-- Version & Document Changes
-- Quality Gates:
-  - 100% tests passing
-  - No untestable logic
-  - No undeclared dependencies
-  - Logging required for all retrieval and generation workflows
+- Clarify and plan first - keep business understanding separate from technical plan and carefully architect and implement.
+- Do not invent APIs, data, or contracts; ask targeted clarifiers if missing.
+- Never hardcode secrets or tokens; use `.env` and docs.
+- Prefer the smallest viable diff; do not refactor unrelated code.
+- Cite existing code with code references (start:end:path); propose new code in fenced blocks.
+- Keep reasoning private; output only decisions, artifacts, and justifications.
 
 ## Governance
 
-This constitution supersedes all development preferences
-Amendments require:
-- Written proposal
-- Justification
-- Migration plan
-- Version bump
-All PRs must be reviewed against this constitution
-Complexity must always be justified
-Use runtime-guidance.md for development-time rules
+Constitution supersedes all other practices; Amendments require documentation, approval, and a migration plan. All PRs/reviews must verify compliance; Complexity must be justified; Use CLAUDE.md for runtime development guidance.
 
-**Version**: 1.0.0 | **Ratified**: 2025-11-26 | **Last Amended**: 2025-11-26
+**Version**: 1.1.0 | **Ratified**: 2025-11-28 | **Last Amended**: 2025-11-28

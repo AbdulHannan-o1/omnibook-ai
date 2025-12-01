@@ -15,7 +15,7 @@ function App() {
       <h1>Home Page</h1>
       <p>Welcome to OmniBook-AI!</p>
       <ChatbotButton onClick={togglePanel} />
-      {isPanelVisible && <ChatbotPanel />}
+      {isPanelVisible && <ChatbotPanel onClose={togglePanel} />} {/* Pass onClose prop */}
     </>
   );
 }

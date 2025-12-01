@@ -1,0 +1,167 @@
+.heroSection {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  text-align: center;
+  overflow: hidden;
+}
+
+.particles {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+}
+
+.particle {
+  position: absolute;
+  background-color: var(--primary-color);
+  border-radius: 50%;
+  opacity: 0.5;
+  animation: float 20s infinite linear;
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0) translateX(0);
+  }
+  50% {
+    transform: translateY(-200px) translateX(100px);
+  }
+  100% {
+    transform: translateY(0) translateX(0);
+  }
+}
+
+.humanoidSilhouette {
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 300px;
+  height: 500px;
+  background-color: rgba(0, 0, 0, 0.2);
+  /* A real implementation would use an SVG or image */
+  clip-path: polygon(50% 0%, 60% 20%, 70% 40%, 70% 60%, 60% 80%, 50% 100%, 40% 80%, 30% 60%, 30% 40%, 40% 20%);
+  z-index: 1;
+}
+
+.gradientBloom {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(
+    circle,
+    rgba(0, 169, 255, 0.3) 0%,
+    rgba(164, 94, 229, 0.3) 50%,
+    transparent 70%
+  );
+  filter: blur(100px);
+  z-index: 0;
+}
+
+.title {
+  font-size: 4rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 1rem;
+  z-index: 2;
+}
+
+.subtitle {
+  font-size: 1.5rem;
+  color: var(--text-color-secondary);
+  margin-bottom: 2rem;
+  z-index: 2;
+}
+
+.buttonContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  z-index: 2;
+}
+
+.ctaButton {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  z-index: 2;
+  text-decoration: none;
+}
+
+.ctaButton:hover {
+  background-color: #008cdd;
+  text-decoration: none;
+  color: var(--text-color);
+}
+
+.secondaryButton {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+  z-index: 2;
+}
+
+.secondaryButton:hover {
+  background-color: var(--primary-color);
+  color: var(--text-color);
+}
+
+@media (max-width: 768px) {
+  .title {
+    font-size: 2.5rem;
+  }
+
+  .subtitle {
+    font-size: 1.2rem;
+  }
+
+  .buttonContainer {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .ctaButton,
+  .secondaryButton {
+    padding: 0.8rem 1.5rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    font-size: 1rem;
+  }
+
+  .humanoidSilhouette {
+    width: 200px;
+    height: 300px;
+  }
+
+  .gradientBloom {
+    width: 400px;
+    height: 400px;
+  }
+}

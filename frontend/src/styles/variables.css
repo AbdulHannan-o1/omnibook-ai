@@ -1,0 +1,10 @@
+:root {
+  --primary-color: #00a9ff;
+  --secondary-color: #a45ee5;
+  --dark-bg: #0a0a1a;
+  --dark-surface: #1a1a2a;
+  --text-color: #ffffff;
+  --text-color-secondary: #b3b3b3;
+  --glass-bg: rgba(26, 26, 42, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.1);
+}

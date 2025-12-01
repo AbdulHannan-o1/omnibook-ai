@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import DarkModeToggle from '@site-frontend/components/DarkModeToggle';
+import useDarkMode from '@site-frontend/hooks/useDarkMode';
 import ChatbotButton from '../components/ChatbotButton';
 import ChatbotPanel from '../components/ChatbotPanel';
-import { getSelectedText } from '../../frontend/src/utils/textSelection'; // Adjust path as needed
-import '@docusaurus/theme-classic/lib/theme/Root.css'; // Import the original Root.css if needed
+import { getSelectedText } from '@site-frontend/utils/textSelection';
+
 
 interface RootProps {
   children: React.ReactNode;
 }
 
 export default function Root({ children }: RootProps): JSX.Element {
+  const { isDarkMode, toggleDarkMode } = useDarkMode();
   const [isPanelVisible, setIsPanelVisible] = useState(false);
   const [selectedText, setSelectedText] = useState<string | null>(null);
 
@@ -39,6 +42,7 @@ export default function Root({ children }: RootProps): JSX.Element {
   return (
     <React.Fragment>
       {children}
+      <DarkModeToggle />
       <ChatbotButton onClick={togglePanel} />
       {isPanelVisible && <ChatbotPanel initialContext={selectedText} />}
     </React.Fragment>

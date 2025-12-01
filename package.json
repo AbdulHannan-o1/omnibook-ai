@@ -4,9 +4,31 @@
   "description": "OmniBook-AI Platform: Docusaurus + Vite (TypeScript) + FastAPI",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev": "docusaurus serve",
+    "test": "jest"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "@docusaurus/core": "^3.0.0",
+    "@docusaurus/preset-classic": "^3.0.0",
+    "@playwright/test": "^1.57.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@babel/preset-env": "^7.28.5",
+    "@babel/preset-react": "^7.28.5",
+    "@babel/preset-typescript": "^7.28.5",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@types/jest": "^30.0.0",
+    "babel-jest": "^30.2.0",
+    "identity-obj-proxy": "^3.0.0",
+    "jest": "^30.2.0",
+    "jest-environment-jsdom": "^30.2.0",
+    "ts-jest": "^29.4.6"
+  }
 }

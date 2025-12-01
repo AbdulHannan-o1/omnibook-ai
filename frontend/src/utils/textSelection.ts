@@ -1,7 +1,7 @@
-export const getSelectedText = (): string => {
-  if (typeof window === 'undefined') {
-    return '';
-  }
+export const getSelectedText = () => {
   const selection = window.getSelection();
-  return selection ? selection.toString() : '';
+  if (selection) {
+    return selection.toString();
+  }
+  return '';
 };

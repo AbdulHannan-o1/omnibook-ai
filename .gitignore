@@ -23,6 +23,8 @@ Thumbs.db
 
 # Project specific
 book/build/
+.idea/
+
 package-lock.json
 frontend/package-lock.json
 book/package-lock.json

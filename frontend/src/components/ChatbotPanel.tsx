@@ -1,6 +1,11 @@
 import React, { useState } from 'react';
+// import styles from './ChatbotPanel.module.css'; // Remove this import
 
-const ChatbotPanel = () => {
+interface ChatbotPanelProps {
+  onClose: () => void; // Add onClose prop
+}
+
+const ChatbotPanel = ({ onClose }: ChatbotPanelProps) => { // Destructure onClose
   const [messages, setMessages] = useState<{ role: string, content: string }[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -13,7 +18,7 @@ const ChatbotPanel = () => {
       setIsLoading(true);
 
       try {
-        const response = await fetch('/api/chatbot', {
+        const response = await fetch('/api/v1/chatbot/chat', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -32,27 +37,28 @@ const ChatbotPanel = () => {
   };
 
   return (
-    <div className="chatbot-panel">
-      <div className="chatbot-header">
+    <div className="chatbot-panel"> // Use global class
+      <div className="chatbot-header"> // Use global class
         <h2>Chatbot</h2>
-        <button>Close</button>
+        <button className="close-button" onClick={onClose}>X</button> // Use global class and onClose
       </div>
-      <div className="chatbot-messages">
+      <div className="chatbot-messages"> // Use global class
         {messages.map((msg, index) => (
-          <div key={index} className={`message ${msg.role}`}>
+          <div key={index} className={`message ${msg.role === 'user' ? 'user-message' : 'bot-message'}`}> // Use global classes
             {msg.content}
           </div>
         ))}
-        {isLoading && <div className="message assistant">...</div>}
+        {isLoading && <div className="message bot-message">...</div>} // Use global classes
       </div>
-      <div className="chatbot-input">
+      <div className="chatbot-input"> // Use global class
         <input
           type="text"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+          className="input-field" // Add global class for input
         />
-        <button onClick={handleSendMessage}>Send</button>
+        <button onClick={handleSendMessage} className="send-button">Send</button> // Add global class for send button
       </div>
     </div>
   );

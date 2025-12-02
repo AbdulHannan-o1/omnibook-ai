@@ -17,7 +17,7 @@ class LLMService:
             model="gemini/gemini-2.0-flash",  # Using a specific Gemini model
             api_key=self.gemini_api_key
         )
-        self.embedding_model = SentenceTransformer('BAAI/bge-large-en-v1.5') # Local BGE embedding model
+        self.embedding_model = SentenceTransformer(os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"), device="cpu") # Local BGE embedding model
         self.reranker = CrossEncoder('BAAI/bge-reranker-base') # Local BGE reranker model
         self.vector_store = vector_store
 
@@ -73,24 +73,36 @@ class LLMService:
         Optionally rewrites the query before search.
         """
         try:
+            logger.info(f"Starting RAG search for query: '{query}'")
             if rewrite_query:
+                original_query = query
                 query = await self._rewrite_query(query)
+                logger.info(f"Query rewritten from '{original_query}' to '{query}'")
 
+            logger.info("Generating query embedding...")
             query_embedding = await self.get_embedding(query)
             if not query_embedding:
+                logger.warning("Failed to generate query embedding. Returning empty list.")
                 return []
+            logger.info(f"Query embedding generated (first 5 dims): {query_embedding[:5]}...")
 
             # Step 1: Initial search to retrieve a larger set of documents
+            logger.info(f"Performing initial vector store search with limit: {initial_search_limit}...")
             documents_with_payload = await self.vector_store.search(query_embedding, query_text=query, limit=initial_search_limit, with_payload=True)
+            logger.info(f"Initial search returned {len(documents_with_payload)} documents.")
 
             if not documents_with_payload:
+                logger.info("No documents found in initial search. Returning empty list.")
                 return []
 
             # Prepare for reranking: pairs of (query, document_content)
             sentence_pairs = [[query, doc["content"]] for doc in documents_with_payload]
+            logger.info(f"Preparing {len(sentence_pairs)} sentence pairs for reranking.")
 
             # Step 2: Rerank the retrieved documents
+            logger.info("Performing reranking...")
             rerank_scores = self.reranker.predict(sentence_pairs)
+            logger.info(f"Reranking completed. Scores (first 5): {rerank_scores[:5]}...")
 
             # Combine documents with their rerank scores and sort
             scored_documents = sorted(
@@ -98,9 +110,11 @@ class LLMService:
                 key=lambda x: x[1],
                 reverse=True
             )
+            logger.info(f"Documents sorted by rerank score. Top score: {scored_documents[0][1]}")
 
             # Step 3: Select the top N relevant documents (with their full payloads) after reranking
             top_documents_payloads = [doc[0] for doc in scored_documents[:rerank_limit]]
+            logger.info(f"Selected top {len(top_documents_payloads)} documents after reranking.")
 
             return top_documents_payloads
         except Exception as e:

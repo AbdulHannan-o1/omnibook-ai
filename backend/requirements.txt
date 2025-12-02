@@ -5,3 +5,4 @@ qdrant-client
 openai-agents[litellm]
 python-dotenv
 pytest
+fastembed

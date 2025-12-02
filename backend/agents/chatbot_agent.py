@@ -2,27 +2,12 @@ from agents import Agent, Runner
 from backend.services.llm_service import get_gemini_model, llm_service
 from backend.utils.observability import logger
 
-def book_guardrail(input_data):
-    """
-    A simple guardrail to check if the input is related to books.
-    """
-    book_keywords = ["book", "author", "chapter", "page", "read", "story", "novel"]
-    if not any(keyword in input_data.lower() for keyword in book_keywords):
-        logger.warning(f"Guardrail triggered: Off-topic input received: '{input_data}'")
-        return "I can only answer questions about books. Please ask me something about a book."
-    return None
-
 
 async def run_agent(user_input):
     """
     Runs the chatbot agent with the given user input, incorporating RAG.
     """
     logger.info(f"Running chatbot agent with input: '{user_input}'")
-
-    # Apply guardrail
-    guardrail_response = book_guardrail(user_input)
-    if guardrail_response:
-        return guardrail_response
 
     # Perform RAG search to get relevant context and metadata
     retrieved_documents_payloads = await llm_service.rag_search(user_input)

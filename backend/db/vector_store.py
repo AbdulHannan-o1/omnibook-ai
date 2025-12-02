@@ -17,14 +17,15 @@ class VectorStore:
 
         self.client = QdrantClient(
             url=self.qdrant_url,
-            api_key=self.qdrant_api_key,
+            api_key=self.qdrant_api_key
         )
         logger.info(f"Initialized Qdrant client for collection: {self.collection_name}")
 
+        self.embedding_dim = int(os.getenv("EMBEDDING_DIM", "384")) # Default to 384 if not set
         # Ensure collection exists
         self.client.recreate_collection(
             collection_name=self.collection_name,
-            vectors_config=models.VectorParams(size=1024, distance=models.Distance.COSINE), # Updated for BGE-large-en-v1.5
+            vectors_config=models.VectorParams(size=self.embedding_dim, distance=models.Distance.COSINE), # Updated for BGE-small-en-v1.5
         )
         logger.info(f"Ensured Qdrant collection '{self.collection_name}' exists.")
 
@@ -34,17 +35,19 @@ class VectorStore:
         If with_payload is True, returns a list of document payloads.
         """
         try:
-            search_result = self.client.query(
+            search_result = self.client.query_points(
                 collection_name=self.collection_name,
-                query_vector=query_embedding,
-                query_text=query_text,
+                query=query_embedding, # Changed from query_vector to query
                 limit=limit,
                 with_payload=True  # Always retrieve payload for reranking / metadata
             )
-            if with_payload:
-                documents = [hit.payload for hit in search_result if hit.payload]
+            if search_result.points: # Check if there are any points before accessing
+                if with_payload:
+                    documents = [hit.payload for hit in search_result.points if hit.payload]
+                else:
+                    documents = [hit.payload["content"] for hit in search_result.points if hit.payload and "content" in hit.payload]
             else:
-                documents = [hit.payload["content"] for hit in search_result if hit.payload and "content" in hit.payload]
+                documents = []
             logger.info(f"Found {len(documents)} documents from Qdrant search.")
             return documents
         except Exception as e:
@@ -75,5 +78,45 @@ class VectorStore:
         except Exception as e:
             logger.error(f"Error upserting documents to Qdrant: {e}", exc_info=True)
             raise
+
+    async def check_collection_status(self):
+        """
+        Checks and logs the status of the Qdrant collection.
+        """
+        try:
+            # 1. All collections
+            collections = self.client.get_collections().collections
+            logger.info(f"Available Qdrant collections: {[c.name for c in collections]}")
+
+            # 2. Get current collection info
+            collection_info = self.client.get_collection(collection_name=self.collection_name)
+
+            # 3. Vector size
+            vector_size = collection_info.config.params.vectors.size
+            logger.info(f"Collection '{self.collection_name}' vector size: {vector_size}")
+
+            # 4. How many points are inserted
+            points_count = collection_info.points_count
+            logger.info(f"Collection '{self.collection_name}' points count: {points_count}")
+
+            # 5. Indexing status (approximation via indexing threshold)
+            # Qdrant doesn't expose a direct "indexing status" but rather configuration for it.
+            # We can infer that if points are present, indexing is happening or done based on config.
+            hnsw_config = collection_info.config.hnsw_config
+            if hnsw_config:
+                logger.info(f"Collection '{self.collection_name}' HNSW indexing enabled. M: {hnsw_config.m}, Ef construction: {hnsw_config.ef_construct}")
+            else:
+                logger.info(f"Collection '{self.collection_name}' HNSW indexing not configured.")
+
+            # 6. Cluster health
+            cluster_info = self.client.cluster_info()
+            logger.info(f"Qdrant cluster status: {cluster_info.status.value}")
+            if cluster_info.status.value == 'green':
+                logger.info("Qdrant cluster is healthy.")
+            else:
+                logger.warning(f"Qdrant cluster is not healthy: {cluster_info.status.value}")
+
+        except Exception as e:
+            logger.error(f"Error checking Qdrant collection status: {e}", exc_info=True)
 
 vector_store = VectorStore()

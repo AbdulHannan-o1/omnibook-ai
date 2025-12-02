@@ -100,7 +100,7 @@ async def update_chapter_progress(user_id: str, chapter_id: str, progress: Dict[
         raise HTTPException(status_code=500, detail="Internal Server Error")
 
 @app.post("/api/v1/chatbot/chat")
-async def chat(request: ChatbotRequest, token: str = Depends(oauth2_scheme)):
+async def chat(request: ChatbotRequest):
     try:
         logger.info(f"Chatbot request received: message='{request.message}', context='{request.context}'")
         full_message = request.message

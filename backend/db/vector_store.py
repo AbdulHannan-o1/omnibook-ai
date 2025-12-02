@@ -28,15 +28,16 @@ class VectorStore:
         )
         logger.info(f"Ensured Qdrant collection '{self.collection_name}' exists.")
 
-    async def search(self, query_embedding: list[float], limit: int = 3, with_payload: bool = False) -> list[str]:
+    async def search(self, query_embedding: list[float], query_text: str, limit: int = 3, with_payload: bool = False) -> list[dict]:
         """
         Searches the Qdrant collection for relevant documents.
         If with_payload is True, returns a list of document payloads.
         """
         try:
-            search_result = self.client.search(
+            search_result = self.client.query(
                 collection_name=self.collection_name,
                 query_vector=query_embedding,
+                query_text=query_text,
                 limit=limit,
                 with_payload=True  # Always retrieve payload for reranking / metadata
             )

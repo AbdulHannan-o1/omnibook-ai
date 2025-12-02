@@ -14,7 +14,12 @@ async def add_sample_book_content():
     print("Adding book content to Qdrant...")
 
     documents_to_upsert = []
-    mdx_files = glob.glob("book/docs/**/*.mdx", recursive=True)
+    mdx_files = []
+    for root, _, files in os.walk("book"):
+        for file in files:
+            if file.endswith((".mdx", ".md")):
+                mdx_files.append(os.path.join(root, file))
+    print(f"Found MDX files: {mdx_files}")
 
     # Initialize tiktoken encoder
     # Using 'cl100k_base' as a common encoder, adjust if a different model is used by the LLM

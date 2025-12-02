@@ -9,6 +9,10 @@ from sentence_transformers import SentenceTransformer, CrossEncoder # For BGE em
 class LLMService:
     def __init__(self):
         load_dotenv() # Ensure .env is loaded when LLMService is instantiated
+        self.gemini_api_key = os.getenv("GEMINI_API_KEY")
+        if not self.gemini_api_key:
+            logger.error("GEMINI_API_KEY not found in environment variables.")
+            raise ValueError("GEMINI_API_KEY not set")
         self.model = LitellmModel(
             model="gemini/gemini-2.0-flash",  # Using a specific Gemini model
             api_key=self.gemini_api_key
@@ -36,7 +40,8 @@ class LLMService:
         try:
             agent = Agent(
                 name="Gemini Assistant",
-                model=self.model
+                model=self.model,
+                guardrails=None # Temporarily add to bypass error if Runner is passing it
             )
             result = await Runner.run(agent, full_prompt)
             return result.final_output
@@ -76,7 +81,7 @@ class LLMService:
                 return []
 
             # Step 1: Initial search to retrieve a larger set of documents
-            documents_with_payload = await self.vector_store.search(query_embedding, limit=initial_search_limit, with_payload=True)
+            documents_with_payload = await self.vector_store.search(query_embedding, query_text=query, limit=initial_search_limit, with_payload=True)
 
             if not documents_with_payload:
                 return []

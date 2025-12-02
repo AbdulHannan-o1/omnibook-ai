@@ -19,6 +19,11 @@ async def run_agent(user_input):
     """
     logger.info(f"Running chatbot agent with input: '{user_input}'")
 
+    # Apply guardrail
+    guardrail_response = book_guardrail(user_input)
+    if guardrail_response:
+        return guardrail_response
+
     # Perform RAG search to get relevant context and metadata
     retrieved_documents_payloads = await llm_service.rag_search(user_input)
 
@@ -55,8 +60,7 @@ async def run_agent(user_input):
     agent = Agent(
         name="Gemini Chatbot",
         instructions=agent_instructions,
-        model=get_gemini_model(),
-        guardrails=[book_guardrail]
+        model=get_gemini_model()
     )
     result = await Runner.run(agent, user_input)
     logger.info(f"Chatbot agent finished. Output: '{result.final_output}'")

@@ -23,11 +23,16 @@ class VectorStore:
 
         self.embedding_dim = int(os.getenv("EMBEDDING_DIM", "384")) # Default to 384 if not set
         # Ensure collection exists
-        self.client.recreate_collection(
-            collection_name=self.collection_name,
-            vectors_config=models.VectorParams(size=self.embedding_dim, distance=models.Distance.COSINE), # Updated for BGE-small-en-v1.5
-        )
-        logger.info(f"Ensured Qdrant collection '{self.collection_name}' exists.")
+        try:
+            self.client.get_collection(collection_name=self.collection_name)
+            logger.info(f"Qdrant collection '{self.collection_name}' already exists.")
+        except Exception:
+            logger.info(f"Qdrant collection '{self.collection_name}' not found. Creating it now.")
+            self.client.create_collection(
+                collection_name=self.collection_name,
+                vectors_config=models.VectorParams(size=self.embedding_dim, distance=models.Distance.COSINE),
+            )
+            logger.info(f"Ensured Qdrant collection '{self.collection_name}' exists.")
 
     async def search(self, query_embedding: list[float], query_text: str, limit: int = 3, with_payload: bool = False) -> list[dict]:
         """

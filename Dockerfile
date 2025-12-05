@@ -15,4 +15,4 @@ RUN pip install --no-cache-dir -r /app/backend/requirements.txt
 EXPOSE $PORT
 
 # Run the uvicorn server
-CMD uvicorn backend.main:app --host 0.0.0.0 --port $PORT
+CMD sh -c "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"

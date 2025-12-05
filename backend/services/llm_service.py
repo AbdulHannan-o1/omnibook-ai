@@ -3,56 +3,124 @@ from agents import Agent, Runner # Import Runner for agent execution
 from agents.extensions.models.litellm_model import LitellmModel
 from dotenv import load_dotenv
 from backend.utils.observability import logger # Import logger
-import litellm # Import litellm for embedding
-
-load_dotenv()
+from backend.db.vector_store import vector_store
+from sentence_transformers import SentenceTransformer, CrossEncoder # For BGE embedding and reranking
 
 class LLMService:
     def __init__(self):
+        load_dotenv() # Ensure .env is loaded when LLMService is instantiated
         self.gemini_api_key = os.getenv("GEMINI_API_KEY")
         if not self.gemini_api_key:
             logger.error("GEMINI_API_KEY not found in environment variables.")
-            raise ValueError("GEMINI_API_KEY not found in environment variables.")
-
-        self.agent = Agent(
-            name="Gemini Assistant",
-            model=LitellmModel(
-                model="gemini/gemini-2.0-flash",  # Using a specific Gemini model
-                api_key=self.gemini_api_key
-            )
+            raise ValueError("GEMINI_API_KEY not set")
+        self.model = LitellmModel(
+            model="gemini/gemini-2.0-flash",  # Using a specific Gemini model
+            api_key=self.gemini_api_key
         )
-        # Initialize litellm for embeddings
-        litellm.api_key = self.gemini_api_key
-        litellm.api_base = os.getenv("LITELLM_API_BASE", None) # Optional: if using a custom litellm proxy
+        self.embedding_model = SentenceTransformer(os.getenv("EMBEDDING_MODEL", "BAAI/bge-small-en-v1.5"), device="cpu") # Local BGE embedding model
+        self.reranker = CrossEncoder('BAAI/bge-reranker-base') # Local BGE reranker model
+        self.vector_store = vector_store
 
-    def get_agent(self):
-        return self.agent
+    def get_model(self):
+        return self.model
 
     async def get_embedding(self, text: str) -> list[float]:
         """
-        Generates an embedding for the given text using LiteLLM.
+        Generates an embedding for the given text using the local BGE model.
         """
         try:
-            # Using a common embedding model, e.g., "text-embedding-ada-002" or a Gemini embedding model
-            # For Gemini, you might use "gemini-pro-vision" or a specific embedding model if available
-            # For simplicity, let's assume a generic embedding model supported by litellm
-            # You might need to adjust the model name based on actual LiteLLM/Gemini capabilities
-            response = await litellm.aembedding(
-                model="gemini/embedding-001", # Gemini embedding model
-                input=[text],
-                api_key=self.gemini_api_key
-            )
-            return response.data[0].embedding
+            embeddings = self.embedding_model.encode([text], normalize_embeddings=True)
+            return embeddings[0].tolist()
         except Exception as e:
-            logger.error(f"Error generating embedding: {e}", exc_info=True)
+            logger.error(f"Error generating embedding with BGE: {e}", exc_info=True)
             raise
 
     async def generate_response(self, prompt: str, context: str = None):
         full_prompt = f"Context: {context}\nPrompt: {prompt}" if context else prompt
         try:
-            # In a real scenario, you would use self.agent.run(full_prompt)
-            result = await Runner.run(self.agent, full_prompt)
+            agent = Agent(
+                name="Gemini Assistant",
+                model=self.model,
+                guardrails=None # Temporarily add to bypass error if Runner is passing it
+            )
+            result = await Runner.run(agent, full_prompt)
             return result.final_output
         except Exception as e:
             logger.error(f"Error generating response from LLM: {e}", exc_info=True)
             return "I apologize, but I encountered an error while trying to generate a response."
+
+    async def _rewrite_query(self, query: str) -> str:
+        """
+        Rewrites the user query to improve RAG search accuracy.
+        """
+        rewrite_prompt = (
+            f"You are a query rewriting assistant. Your goal is to rephrase the user's query "
+            f"to make it more effective for retrieving relevant information from a book about Physical AI and Humanoid Robotics. "
+            f"Expand on the query to include key terms and context relevant to the book content. "
+            f"Only output the rewritten query, nothing else.\nOriginal Query: {query}\nRewritten Query:"
+        )
+        try:
+            rewritten_query = await self.model.generate_text(rewrite_prompt, temperature=0.1, max_output_tokens=100)
+            logger.info(f"Original Query: {query} -> Rewritten Query: {rewritten_query}")
+            return rewritten_query.strip()
+        except Exception as e:
+            logger.error(f"Error rewriting query: {e}", exc_info=True)
+            return query # Fallback to original query on error
+
+    async def rag_search(self, query: str, initial_search_limit: int = 10, rerank_limit: int = 5, rewrite_query: bool = False) -> list[dict]:
+        """
+        Performs a RAG search to retrieve and rerank relevant documents based on the query.
+        Optionally rewrites the query before search.
+        """
+        try:
+            logger.info(f"Starting RAG search for query: '{query}'")
+            if rewrite_query:
+                original_query = query
+                query = await self._rewrite_query(query)
+                logger.info(f"Query rewritten from '{original_query}' to '{query}'")
+
+            logger.info("Generating query embedding...")
+            query_embedding = await self.get_embedding(query)
+            if not query_embedding:
+                logger.warning("Failed to generate query embedding. Returning empty list.")
+                return []
+            logger.info(f"Query embedding generated (first 5 dims): {query_embedding[:5]}...")
+
+            # Step 1: Initial search to retrieve a larger set of documents
+            logger.info(f"Performing initial vector store search with limit: {initial_search_limit}...")
+            documents_with_payload = await self.vector_store.search(query_embedding, query_text=query, limit=initial_search_limit, with_payload=True)
+            logger.info(f"Initial search returned {len(documents_with_payload)} documents.")
+
+            if not documents_with_payload:
+                logger.info("No documents found in initial search. Returning empty list.")
+                return []
+
+            # Prepare for reranking: pairs of (query, document_content)
+            sentence_pairs = [[query, doc["content"]] for doc in documents_with_payload]
+            logger.info(f"Preparing {len(sentence_pairs)} sentence pairs for reranking.")
+
+            # Step 2: Rerank the retrieved documents
+            logger.info("Performing reranking...")
+            rerank_scores = self.reranker.predict(sentence_pairs)
+            logger.info(f"Reranking completed. Scores (first 5): {rerank_scores[:5]}...")
+
+            # Combine documents with their rerank scores and sort
+            scored_documents = sorted(
+                zip(documents_with_payload, rerank_scores),
+                key=lambda x: x[1],
+                reverse=True
+            )
+            logger.info(f"Documents sorted by rerank score. Top score: {scored_documents[0][1]}")
+
+            # Step 3: Select the top N relevant documents (with their full payloads) after reranking
+            top_documents_payloads = [doc[0] for doc in scored_documents[:rerank_limit]]
+            logger.info(f"Selected top {len(top_documents_payloads)} documents after reranking.")
+
+            return top_documents_payloads
+        except Exception as e:
+            logger.error(f"Error during RAG search: {e}", exc_info=True)
+            return []
+llm_service = LLMService()
+
+def get_gemini_model():
+    return llm_service.get_model()

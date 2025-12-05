@@ -1,0 +1,36 @@
+html, body {
+  min-height: 100%;
+}
+
+html {
+  background-color: var(--dark-bg);
+  background-image: linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+  animation: grid-animation 10s linear infinite;
+}
+
+body {
+  color: var(--text-color);
+}
+
+@keyframes grid-animation {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 40px 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 12px;
+  }
+}

@@ -1,0 +1,33 @@
+.ctaSection {
+  padding: 4rem 2rem;
+  text-align: center;
+  background-color: var(--dark-surface);
+  border-radius: 16px;
+  margin: 2rem auto;
+  max-width: 900px;
+}
+
+.title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 2rem;
+}
+
+.ctaButton {
+  background-color: var(--secondary-color);
+  color: var(--text-color);
+  border: none;
+  border-radius: 8px;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: background-color 0.3s, transform 0.3s;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.ctaButton:hover {
+  background-color: #8e44ad;
+  transform: translateY(-5px);
+}

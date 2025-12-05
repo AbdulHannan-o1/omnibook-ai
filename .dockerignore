@@ -2,13 +2,6 @@
 **
 
 # Allow specific files/directories that are needed
-!.git/HEAD
-!.git/config
-!.git/description
-!.git/hooks/
-!.git/info/
-!.git/objects/
-!.git/refs/
 !.gitignore
 !book/
 !backend/
@@ -20,3 +13,6 @@
 !specs/
 !history/
 !.specify/
+
+# Explicitly ignore the .git directory
+.git/

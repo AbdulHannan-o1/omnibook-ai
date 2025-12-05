@@ -2,25 +2,13 @@
   "$schema": "https://railway.app/schemas/railway.schema.json",
   "build": {
     "builder": "NIXPACKS",
-    "nixpacksPlan": {
-      "phases": {
-        "setup": {
-          "nixPkgs": ["python311", "gcc", "git"]
-        },
-        "install": {
-          "cmds": [
-            "pip install --upgrade pip",
-            "pip install -r backend/requirements.txt"
-          ]
-        }
-      }
-    }
+    "buildCommand": "pip install --upgrade pip && pip install -r backend/requirements.txt"
   },
   "start": {
-    "cmd": "uvicorn backend.main:app --host 0.0.0.0 --port $PORT"
+    "cmd": "cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT"
   },
   "deploy": {
     "healthcheckPath": "/docs",
-    "healthcheckTimeout": 300
+    "healthcheckTimeout": 200
   }
 }

@@ -18,8 +18,8 @@ Implement a chatbot feature that can be accessed via a persistent button in the 
 -->
 
 **Language/Version**: Python 3.11  
-**Primary Dependencies**: `openai-agents[litellm]`, `litellm`  
-**Storage**: N/A (Chatbot session data will be transient or managed by the SDK/model directly)  
+**Primary Dependencies**: `openai-agents[litellm]`, `litellm`, `qdrant-client`, `sentence-transformers`, `tiktoken`  
+**Storage**: Qdrant for vector embeddings of chunked book content and associated metadata. Chatbot session data will be transient or managed by the SDK/model directly.  
 **Testing**: Unit/integration tests using pytest for agent logic and interaction flows.  
 **Target Platform**: Linux server, Web/Client application for UI integration
 **Project Type**: Single (Python backend for chatbot logic), Web (for UI integration)  
@@ -32,7 +32,7 @@ Implement a chatbot feature that can be accessed via a persistent button in the 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
 -   ✅ **I. Agent-First Architecture**: The chatbot is designed as an independent agent.
--   ⏳ **II. RAG-Native Design**: Alignment to be confirmed during research and design, especially if RAG is used for contextual understanding.
+-   ✅ **II. RAG-Native Design**: RAG is integrated for contextual understanding using Qdrant.
 -   ✅ **III. Test-First Development (NON-NEGOTIABLE)**: Pytest is planned; specific AI agent testing strategy requires research.
 -   ⏳ **IV. Integration Testing for Knowledge Flows**: Will be critical for chatbot-book interaction; detailed strategy to be designed.
 -   ✅ **V. Future-Proof Book Format Standards**: Not directly impacted, but contextual retrieval must respect book formats.
@@ -72,18 +72,21 @@ specs/[###-feature]/
 -->
 
 ```text
-chatbot/
-├── main.py              # Main chatbot agent entry point
+backend/
+├── main.py              # Main FastAPI application entry point
 ├── agents/
 │   └── chatbot_agent.py # Definition of the OpenAI agent
+├── db/
+│   ├── vector_store.py  # Qdrant client and vector store operations
+│   └── schema.py        # Database schema (if any)
 ├── services/
-│   └── llm_service.py   # LiteLLM integration for Google Gemini
+│   └── llm_service.py   # LiteLLM integration for Google Gemini, embedding, and reranking
+├── utils/
+│   ├── mdx_utils.py     # Utilities for MDX processing
+│   └── observability.py # Logging and observability utilities
 └── tests/
     └── unit/
         └── test_chatbot_agent.py
-
-src/  # Existing application source
-tests/ # Existing application tests
 ```
 
 **Structure Decision**: A single project structure is chosen, with a dedicated `chatbot/` directory for the Python backend agent, alongside existing `src/` and `tests/` directories.

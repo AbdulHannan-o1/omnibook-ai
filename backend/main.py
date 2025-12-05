@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer
 from backend.agents.chatbot_agent import run_agent
@@ -11,6 +12,22 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 user_preferences: Dict[str, Dict[str, Dict[str, Any]]] = {}
 
 app = FastAPI()
+
+# Configure CORS
+origins = [
+    "http://localhost",
+    "http://localhost:3000", # Docusaurus frontend
+    "http://localhost:5173", # Vite frontend
+    # Add your Vercel frontend domain here in production
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class ChatbotRequest(BaseModel):
     message: str

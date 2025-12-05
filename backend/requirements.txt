@@ -6,3 +6,4 @@ openai-agents[litellm]
 python-dotenv
 pytest
 fastembed
+sentence_transformers
